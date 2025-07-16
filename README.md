@@ -1,2 +1,0 @@
-# pardus-domain-settings
-
