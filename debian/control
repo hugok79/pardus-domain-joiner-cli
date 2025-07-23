@@ -10,7 +10,7 @@ Package: pardus-domain-cli
 Architecture: all
 Depends: python3 (>=3.5),
          python3-apt,
-         pardus-domain-core,
+         libpardus-domain-joiner,
          krb5-user, 
 	 samba, 
 	 cifs-utils, 

@@ -4,12 +4,12 @@ import argparse
 import sys
 import os
 
-#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../../pardus_domain_core')))
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../../pardus_domain_joiner')))
 
-from pardus_domain_core import domain_operations
-from pardus_domain_core import config_manager
-from pardus_domain_core import domain_joiner_realmd
-from pardus_domain_core import domain_joiner_winbind
+from pardus_domain_joiner import domain_operations
+from pardus_domain_joiner import config_manager
+from pardus_domain_joiner import domain_joiner_realmd
+from pardus_domain_joiner import domain_joiner_winbind
 
 import locale
 from locale import gettext as _
