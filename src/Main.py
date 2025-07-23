@@ -60,7 +60,7 @@ def main():
             domain_operations.join(comp_name, domain, username, password, ouaddress, realmd=True)
         elif args.leave:
             print(_("Leave process is starting."))
-            domain_operations.leave(realmd=True)
+            domain_operations.leave(realmd=True, user=username, password=password)
         elif args.list:
             print(domain_operations.list(realmd=True))
         elif args.discover:
@@ -68,10 +68,10 @@ def main():
                 print(_("Please enter domain name!"))
                 sys.exit(1)
             domain_joiner_realmd.discover(domain)
-        elif args.permit:
+            """elif args.permit:
             domain_joiner_realmd.permit()
         elif args.deny:
-            domain_joiner_realmd.deny()
+            domain_joiner_realmd.deny()"""
         else:
             parser.print_help()
             print(_("Select the action you want to perform!"))
@@ -88,14 +88,14 @@ def main():
                 sys.exit(1)
             domain_operations.leave(winbind=True, user=username, password=password)
         elif args.list:
-            domain_operations.list(winbind=True)
+            print(domain_operations.list(winbind=True))
         elif args.discover:
-            domain_joiner_winbind.discover()
-        elif args.list_users:
+            print(domain_joiner_winbind.discover())
+            """elif args.list_users:
             result = domain_joiner_winbind.list_users()
             print(result.stdout.decode('utf-8'))
         elif args.list_groups:
-            result = domain_joiner_winbind.list_group()
+            result = domain_joiner_winbind.list_group()"""
         else:
             parser.print_help()
             print(_("Select the action you want to perform!"))
@@ -107,11 +107,15 @@ def main():
         domain_operations.discover_domain(domain)
     elif args.set_hostname:
         print(_("Hostname is being changed."))
-        if comp_name is None or domain is None:
+        if domain:
+            config_manager.set_hostname(comp_name, domain)
+            config_manager.update_hostname_file(comp_name, domain)
+        elif domain is None and comp_name is None:
             print(_("Please enter computer name and domain name!"))
             sys.exit(1)
         config_manager.set_hostname(comp_name)
-        config_manager.update_hostname_file(comp_name,domain)
+        config_manager.update_hostname_file(comp_name)
+        
     else:
         parser.print_help()
         print(_("Please specify which service to use: sssd or winbind.\nYou can use the -i option to view domain information."))
