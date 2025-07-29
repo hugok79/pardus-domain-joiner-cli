@@ -1,3 +1,14 @@
+pardus-domain-cli (1.0.2) unstable; urgency=medium
+
+  [ busra ]
+  * Update cli
+  * Add user manual for cli
+  * dependency update
+  * Add .gitignore
+  * switch to subparser structure for command handling
+
+ -- Büşra ÇAĞLIYAN <busra.cagliyan@pardus.org.tr>  Tue, 29 Jul 2025 10:21:00 +0300
+
 pardus-domain-cli (1.0) unstable; urgency=medium
 
   * first commit
