@@ -25,6 +25,10 @@ class SSSDService:
 
 class WinbindService:
     def join(self, comp_name, domain, username, password, ou, workgroup):
+
+        if workgroup is None:
+            workgroup = domain_operations.get_netbios_name(domain)
+
         domain_operations.join(comp_name, domain, username, password, ou, workgroup, winbind=True)
 
     def leave(self, user, password):
