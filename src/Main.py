@@ -1,134 +1,150 @@
-#!/usr/bin/env python3
-
 import argparse
-import sys
+import getpass
 import os
-
-#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../../pardus_domain_joiner')))
+import logging
 
 from pardus_domain_joiner import domain_operations
 from pardus_domain_joiner import config_manager
 from pardus_domain_joiner import domain_joiner_realmd
 from pardus_domain_joiner import domain_joiner_winbind
 
-import locale
-from locale import gettext as _
 
-locale.bindtextdomain('pardus-domain-cli', '/usr/share/locale')
-locale.textdomain('pardus-domain-cli')
+class SSSDService:
+    def join(self, comp_name, domain, user, password, ou, workgroup=None):
+        domain_operations.join(comp_name, domain, user, password, ou, realmd=True)
 
-SYSTEM_LANGUAGE = os.environ.get("LANG")
-locale.setlocale(locale.LC_ALL, SYSTEM_LANGUAGE)
+    def leave(self, user, password):
+        domain_operations.leave(realmd=True, user=user, password=password)
+
+    def status(self):
+        return domain_operations.list(realmd=True)
+
+    def discover(self, domain):
+        domain_joiner_realmd.discover(domain)
+
+
+class WinbindService:
+    def join(self, comp_name, domain, username, password, ou, workgroup):
+        domain_operations.join(comp_name, domain, username, password, ou, workgroup, winbind=True)
+
+    def leave(self, user, password):
+        domain_operations.leave(winbind=True, user=user, password=password)
+
+    def status(self):
+        return domain_operations.list(winbind=True)
+
+    def discover(self):
+        domain_joiner_winbind.discover()
+
+
+class DomainManager:
+    def __init__(self, strategy):
+        self.strategy = strategy
+
+    def join(self, comp_name, domain, user, password, ou=None, workgroup=None):
+        print("The join process has been initiated.")
+        self.strategy.join(comp_name, domain, user, password, ou, workgroup)
+        print("The join process is completed")
+
+    def leave(self, user, password):
+        print("The leave process has been initiated.")
+        self.strategy.leave(user, password)
+        print("The leave process is completed")
+
+    def status(self):
+        realm = self.strategy.status()
+        print("Querying domain name information...")
+        if realm:
+            print("Domain Name: ", realm)
+            print("You are in the domain.")
+        else:
+            print("Domain information not found.")
+            print("You are not in the domain.")
+
+    def discover(self, domain):
+        self.strategy.discover(domain)
+
+
+def change_hostname(comp_name):
+    print("Hostname is being changed.")
+    config_manager.set_hostname(comp_name)
+
+
+def get_manager(service):
+    if service == "sssd":
+        return SSSDService()
+    elif service == "winbind":
+        return WinbindService()
+    else:
+        raise ValueError("Unknown service")
 
 
 def main():
-    parser = argparse.ArgumentParser(description=_("Cli application for pardus domain joiner. You must run it with sudo"))
-    
-    parser.add_argument("-s", "--sssd", action="store_true", help=_("Use sssd service for domain operations"))
-    parser.add_argument("-w", "--winbind", action="store_true", help=_("Use winbind service for domain operations"))
-    parser.add_argument("-i", "--info", action="store_true", help=_("Discover domain name"))
-    parser.add_argument("--set-hostname", action="store_true", help=_("Change hostname"))
+    parser = argparse.ArgumentParser(description="CLI application for Pardus Domain Joiner. You must run it with sudo.")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable debug logs")
 
-    parser.add_argument("-j", "--join", action="store_true", help=_("Join to the domain"))
-    parser.add_argument("-l", "--leave", action="store_true", help=_("Leave from the domain"))
-    parser.add_argument("--list", action="store_true", help=_("Check if it is in the domain"))
-    parser.add_argument("--discover", action="store_true", help=_("Discover if there is a domain name"))
-    # parser.add_argument("--permit", action="store_true", help=_("For sssd service"))
-    # parser.add_argument("--deny", action="store_true", help=_("For sssd service"))
-    # parser.add_argument("--list-users", action="store_true", help=_("For winbind service"))
-    # parser.add_argument("--list-groups", action="store_true", help=_("For winbind service"))
-  
-    parser.add_argument("-d", "--domain", help=_("Domain name"))
-    parser.add_argument("-u", "--user", help=_("Domain username"))
-    parser.add_argument("-p", "--password", help=_("Domain user's password"))
-    parser.add_argument("-c", "--computer-name", help=_("Computer name"))
-    parser.add_argument("-ou", "--organizational-unit", help=_("Organizational unit"))
+    subparser = parser.add_subparsers(dest="command", required=True)
+
+    # join
+    join_parser = subparser.add_parser("join", help="Join the domain")
+    join_parser.add_argument("service", choices=["sssd", "winbind"])
+    join_parser.add_argument("-d", "--domain", required=True)
+    join_parser.add_argument("-u", "--user", required=True)
+    join_parser.add_argument("-p", "--password")
+    join_parser.add_argument("-c", "--computer")
+    join_parser.add_argument("--ou")
+    join_parser.add_argument("--workgroup")
+
+    # leave
+    leave_parser = subparser.add_parser("leave", help="Leave the domain")
+    leave_parser.add_argument("service", choices=["sssd", "winbind"])
+    leave_parser.add_argument("-u", "--user", required=True)
+    leave_parser.add_argument("-p", "--password")
+
+    # status
+    status_parser = subparser.add_parser("status", help="Check domain status")
+    status_parser.add_argument("service", choices=["sssd", "winbind"])
+
+    # info
+    info_parser = subparser.add_parser("info", help="Show discovered domain name")
+    info_parser.add_argument("-d", "--domain", required=True)
+
+    # change hostname
+    change_parser = subparser.add_parser("change", help="Change the hostname")
+    change_parser.add_argument("-c", "--computer", required=True)
 
     args = parser.parse_args()
 
-    domain = args.domain
-    comp_name = args.computer_name
-    username = args.user
-    password = args.password
-    ouaddress = args.organizational_unit
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
-    if args.sssd:
-        print(_("You have selected the sssd service."))
-        if args.join:
-            print(_("Join process is starting."))
-            check_args(domain, comp_name, username, password)
-            domain_operations.join(comp_name, domain, username, password, ouaddress, realmd=True)
-        elif args.leave:
-            print(_("Leave process is starting."))
-            domain_operations.leave(realmd=True, user=username, password=password)
-        elif args.list:
-            print(domain_operations.list(realmd=True))
-        elif args.discover:
-            if domain is None:
-                print(_("Please enter domain name!"))
-                sys.exit(1)
-            domain_joiner_realmd.discover(domain)
-            """elif args.permit:
-            domain_joiner_realmd.permit()
-        elif args.deny:
-            domain_joiner_realmd.deny()"""
-        else:
-            parser.print_help()
-            print(_("Select the action you want to perform!"))
-    elif args.winbind:
-        print(_("You have selected the winbind service."))
-        if args.join:
-            print(_("Join process is starting."))
-            check_args(domain, comp_name, username, password)
-            domain_operations.join(comp_name, domain, username, password, ouaddress, winbind=True)
-        elif args.leave:
-            print(_("Leave process is starting."))
-            if username is None or password is None:
-                print(_("Please enter username and password!"))
-                sys.exit(1)
-            domain_operations.leave(winbind=True, user=username, password=password)
-        elif args.list:
-            print(domain_operations.list(winbind=True))
-        elif args.discover:
-            print(domain_joiner_winbind.discover())
-            """elif args.list_users:
-            result = domain_joiner_winbind.list_users()
-            print(result.stdout.decode('utf-8'))
-        elif args.list_groups:
-            result = domain_joiner_winbind.list_group()"""
-        else:
-            parser.print_help()
-            print(_("Select the action you want to perform!"))
-    elif args.info:
-        print(_("Domain name is being checked."))
-        if domain is None:
-            print(_("Please enter domain name!"))
-            sys.exit(1)
-        domain_operations.discover_domain(domain)
-    elif args.set_hostname:
-        print(_("Hostname is being changed."))
-        if domain:
-            config_manager.set_hostname(comp_name, domain)
-            config_manager.update_hostname_file(comp_name, domain)
-        elif domain is None and comp_name is None:
-            print(_("Please enter computer name and domain name!"))
-            sys.exit(1)
-        config_manager.set_hostname(comp_name)
-        config_manager.update_hostname_file(comp_name)
-        
-    else:
-        parser.print_help()
-        print(_("Please specify which service to use: sssd or winbind.\nYou can use the -i option to view domain information."))
-        sys.exit(1)
+    if hasattr(args, "password") and not args.password:
+        args.password = getpass.getpass(f"Password for {args.user}: ")
 
-def check_args(domain, comp_name, username, password):
-    if (domain is None or comp_name is None or username is None) and password is None:
-        print(_("Error: The following arguments are required!"))
-        print(_("Please enter other commands:\n"), 
-            ("\t\t [-d/--domain DOMAIN] [-c/--computer-namse COMPUTER]\n"),
-            ("\t\t [-u/--user USERNAME] [-ou/--organizational-unit \"ou=Computers\"]\n"),
-            ("\t\t [--password PASSWORD]\n"))
-        sys.exit(1)
+    if args.command in ["join", "leave", "status"]:
+        manager = get_manager(args.service)
+        domain_manager = DomainManager(manager)
+
+    if args.command == "join":
+        comp_name = args.computer or os.uname()[1]
+        domain_manager.join(
+            comp_name=comp_name,
+            domain=args.domain,
+            user=args.user,
+            password=args.password,
+            ou=getattr(args, "ou", None),
+            workgroup=getattr(args, "workgroup", None)
+        )
+    elif args.command == "leave":
+        domain_manager.leave(user=args.user, password=args.password)
+    elif args.command == "status":
+        domain_manager.status()
+    elif args.command == "info":
+        print(domain_operations.discover_domain(args.domain))
+    elif args.command == "change":
+        change_hostname(comp_name=args.computer)
 
 
 if __name__ == "__main__":
