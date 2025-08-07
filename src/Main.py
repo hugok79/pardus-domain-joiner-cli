@@ -92,8 +92,8 @@ def main():
     # join
     join_parser = subparser.add_parser("join", help="Join the domain")
     join_parser.add_argument("service", choices=["sssd", "winbind"])
-    join_parser.add_argument("-d", "--domain", required=True)
-    join_parser.add_argument("-u", "--user", required=True)
+    join_parser.add_argument("domain", help="Domain name")
+    join_parser.add_argument("user", help="Username")
     join_parser.add_argument("-p", "--password")
     join_parser.add_argument("-c", "--computer")
     join_parser.add_argument("--ou")
@@ -102,7 +102,7 @@ def main():
     # leave
     leave_parser = subparser.add_parser("leave", help="Leave the domain")
     leave_parser.add_argument("service", choices=["sssd", "winbind"])
-    leave_parser.add_argument("-u", "--user", required=True)
+    leave_parser.add_argument("user", help="Username")
     leave_parser.add_argument("-p", "--password")
 
     # status
@@ -111,11 +111,11 @@ def main():
 
     # info
     info_parser = subparser.add_parser("info", help="Show discovered domain name")
-    info_parser.add_argument("-d", "--domain", required=True)
+    info_parser.add_argument("domain", help="Domain name")
 
     # change hostname
     change_parser = subparser.add_parser("change", help="Change the hostname")
-    change_parser.add_argument("-c", "--computer", required=True)
+    change_parser.add_argument("computer", help="Computer name")
 
     args = parser.parse_args()
 
