@@ -95,7 +95,6 @@ def main():
     join_parser.add_argument("domain", help="Domain name")
     join_parser.add_argument("user", help="Username")
     join_parser.add_argument("-p", "--password")
-    join_parser.add_argument("-c", "--computer")
     join_parser.add_argument("--ou")
     join_parser.add_argument("--workgroup")
 
@@ -132,9 +131,8 @@ def main():
         domain_manager = DomainManager(manager)
 
     if args.command == "join":
-        comp_name = args.computer or os.uname()[1]
         domain_manager.join(
-            comp_name=comp_name,
+            comp_name=os.uname()[1],
             domain=args.domain,
             user=args.user,
             password=args.password,
