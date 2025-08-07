@@ -146,7 +146,12 @@ def main():
     elif args.command == "status":
         domain_manager.status()
     elif args.command == "info":
-        print(domain_operations.discover_domain(args.domain))
+        discover_domain = domain_operations.discover_domain(args.domain)
+        if discover_domain:
+            print("Domain discovered:\n",
+                  discover_domain)
+        else:
+            print(f"Server not found: {args.domain}")
     elif args.command == "change":
         change_hostname(comp_name=args.computer)
 
