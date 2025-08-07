@@ -2,6 +2,7 @@ import argparse
 import getpass
 import os
 import logging
+import sys
 
 from pardus_domain_joiner import domain_operations
 from pardus_domain_joiner import config_manager
@@ -46,11 +47,21 @@ class DomainManager:
         self.strategy = strategy
 
     def join(self, comp_name, domain, user, password, ou=None, workgroup=None):
+        realm = self.strategy.status()
+        if realm:
+            print("Domain Name: ", realm)
+            print("You are in the domain.")
+            sys.exit(1)
         print("The join process has been initiated.")
         self.strategy.join(comp_name, domain, user, password, ou, workgroup)
         print("The join process is completed")
 
     def leave(self, user, password):
+        realm = self.strategy.status()
+        if not realm:
+            print("Domain information not found.")
+            print("You are not in the domain.")
+            sys.exit(1)
         print("The leave process has been initiated.")
         self.strategy.leave(user, password)
         print("The leave process is completed")
