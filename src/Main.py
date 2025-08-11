@@ -10,8 +10,9 @@ from pardus_domain_joiner import domain_joiner_realmd
 from pardus_domain_joiner import domain_joiner_winbind
 import toml
 
+CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config")
 CONFIG_FILE = "pdj_cli_config.toml"
-
+USER_PROFILE_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE)
 
 class SSSDService:
     def join(self, comp_name, domain, user, password, ou, workgroup=None):
@@ -61,13 +62,13 @@ class DomainManager:
 
     def save_service(self, service_name):
         config = {'service': {'name': service_name}}
-        with open(CONFIG_FILE, 'w') as f:
+        with open(USER_PROFILE_PATH, 'w') as f:
             toml.dump(config, f)
 
     def load_service(self):
-        if not os.path.exists(CONFIG_FILE):
+        if not os.path.exists(USER_PROFILE_PATH):
             return None
-        with open(CONFIG_FILE, 'r') as f:
+        with open(USER_PROFILE_PATH, 'r') as f:
             config = toml.load(f)
         return config.get('service', {}).get('name')
 
