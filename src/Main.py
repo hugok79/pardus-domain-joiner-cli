@@ -8,6 +8,9 @@ from pardus_domain_joiner import domain_operations
 from pardus_domain_joiner import config_manager
 from pardus_domain_joiner import domain_joiner_realmd
 from pardus_domain_joiner import domain_joiner_winbind
+import toml
+
+CONFIG_FILE = "pdj_cli_config.toml"
 
 
 class SSSDService:
@@ -43,28 +46,49 @@ class WinbindService:
 
 
 class DomainManager:
-    def __init__(self, strategy):
-        self.strategy = strategy
+    def __init__(self, strategy=None):
+        if strategy:
+            self.strategy = strategy
+            self.save_service(strategy.__class__.__name__)
+        else:
+            saved_service = self.load_service()
+            if not saved_service:
+                print("No service selected because the system has not joined a domain before. Please run 'join --service ...' first.")
+                sys.exit(1)
+            self.strategy = self.create_strategy(saved_service)
+        self.domain_status = self.status()
+
+    def save_service(self, service_name):
+        config = {'service': {'name': service_name}}
+        with open(CONFIG_FILE, 'w') as f:
+            toml.dump(config, f)
+
+    def load_service(self):
+        if not os.path.exists(CONFIG_FILE):
+            return None
+        with open(CONFIG_FILE, 'r') as f:
+            config = toml.load(f)
+        return config.get('service', {}).get('name')
+
+    def create_strategy(self, name):
+        if name == "SSSDService":
+            return SSSDService()
+        elif name == "WinbindService":
+            return WinbindService()
+        else:
+            raise ValueError(f"Unknown service: {name}")
 
     def join(self, comp_name, domain, user, password, ou=None, workgroup=None):
-        realm = self.strategy.status()
-        if realm:
-            print("Domain Name: ", realm)
-            print("You are in the domain.")
-            sys.exit(1)
-        print("The join process has been initiated.")
-        self.strategy.join(comp_name, domain, user, password, ou, workgroup)
-        print("The join process is completed")
+        if not self.domain_status:
+            print("The join process has been initiated.")
+            self.strategy.join(comp_name, domain, user, password, ou, workgroup)
+            print("The join process is completed")
 
     def leave(self, user, password):
-        realm = self.strategy.status()
-        if not realm:
-            print("Domain information not found.")
-            print("You are not in the domain.")
-            sys.exit(1)
-        print("The leave process has been initiated.")
-        self.strategy.leave(user, password)
-        print("The leave process is completed")
+        if self.domain_status:
+            print("The leave process has been initiated.")
+            self.strategy.leave(user, password)
+            print("The leave process is completed")
 
     def status(self):
         realm = self.strategy.status()
@@ -72,9 +96,11 @@ class DomainManager:
         if realm:
             print("Domain Name: ", realm)
             print("You are in the domain.")
+            return True
         else:
             print("Domain information not found.")
             print("You are not in the domain.")
+            return False
 
     def discover(self, domain):
         self.strategy.discover(domain)
@@ -111,13 +137,11 @@ def main():
 
     # leave
     leave_parser = subparser.add_parser("leave", help="Leave the domain")
-    leave_parser.add_argument("service", choices=["sssd", "winbind"])
     leave_parser.add_argument("user", help="Username")
     leave_parser.add_argument("-p", "--password")
 
     # status
-    status_parser = subparser.add_parser("status", help="Check domain status")
-    status_parser.add_argument("service", choices=["sssd", "winbind"])
+    subparser.add_parser("status", help="Check domain status")
 
     # info
     info_parser = subparser.add_parser("info", help="Show discovered domain name")
@@ -137,11 +161,9 @@ def main():
     if hasattr(args, "password") and not args.password:
         args.password = getpass.getpass(f"Password for {args.user}: ")
 
-    if args.command in ["join", "leave", "status"]:
+    if args.command == "join":
         manager = get_manager(args.service)
         domain_manager = DomainManager(manager)
-
-    if args.command == "join":
         domain_manager.join(
             comp_name=os.uname()[1],
             domain=args.domain,
@@ -151,9 +173,10 @@ def main():
             workgroup=getattr(args, "workgroup", None)
         )
     elif args.command == "leave":
+        domain_manager = DomainManager()
         domain_manager.leave(user=args.user, password=args.password)
     elif args.command == "status":
-        domain_manager.status()
+        domain_manager = DomainManager()
     elif args.command == "info":
         discover_domain = domain_operations.discover_domain(args.domain)
         if discover_domain:

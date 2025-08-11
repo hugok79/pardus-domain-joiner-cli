@@ -15,6 +15,7 @@ Depends: python3 (>=3.5),
 	 samba, 
 	 cifs-utils, 
 	 smbclient,
-	 python3-ldap
+	 python3-ldap,
+	 python3-toml
 Description: Pardus Domain Settings 
   A cli application that joins your computer to the domain or leaves it from the domain.
