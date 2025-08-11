@@ -47,15 +47,16 @@ class WinbindService:
 
 class DomainManager:
     def __init__(self, strategy=None):
-        if strategy:
-            self.strategy = strategy
-            self.save_service(strategy.__class__.__name__)
-        else:
+        if self.load_service():
             saved_service = self.load_service()
-            if not saved_service:
+            self.strategy = self.create_strategy(saved_service)
+        else:
+            self.strategy = strategy
+            if not self.strategy:
                 print("No service selected because the system has not joined a domain before. Please run 'join --service ...' first.")
                 sys.exit(1)
-            self.strategy = self.create_strategy(saved_service)
+            self.save_service(strategy.__class__.__name__)
+
         self.domain_status = self.status()
 
     def save_service(self, service_name):
