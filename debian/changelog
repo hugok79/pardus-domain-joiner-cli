@@ -1,3 +1,19 @@
+pardus-domain-cli (1.0.4) unstable; urgency=medium
+
+  [ busra ]
+  * Remove required=True from arguments
+  * Update argument that gives the domain info
+  * Remove the computer parameter from join
+  * Add domain check
+  * Update version
+  * feat: persist service selection across commands using TOML
+  * feat: block joining with a service if already connected
+  * update congif file location
+  * fix: create .config directory before writing config file
+  * fix: prioritize strategy over config when selecting service
+
+ -- Büşra ÇAĞLIYAN <busra.cagliyan@pardus.org.tr>  Tue, 12 Aug 2025 06:39:46 +0300
+
 pardus-domain-cli (1.0.3) unstable; urgency=medium
 
   [ busra ]
