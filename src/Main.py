@@ -14,6 +14,8 @@ CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config")
 CONFIG_FILE = "pdj_cli_config.toml"
 USER_PROFILE_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE)
 
+os.makedirs(CONFIG_DIR, exist_ok=True)
+
 class SSSDService:
     def join(self, comp_name, domain, user, password, ou, workgroup=None):
         domain_operations.join(comp_name, domain, user, password, ou, realmd=True)
