@@ -10,7 +10,7 @@ from pardus_domain_joiner import domain_joiner_realmd
 from pardus_domain_joiner import domain_joiner_winbind
 import toml
 
-CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config")
+CONFIG_DIR = "/usr/share/pardus/pardus-domain-cli/config"
 CONFIG_FILE = "pdj_cli_config.toml"
 USER_PROFILE_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE)
 
@@ -49,12 +49,15 @@ class WinbindService:
 
 
 class DomainManager:
-    def __init__(self, strategy=None):
+    def __init__(self, strategy=None, domain=None, hostname=None):
         if strategy:
             self.strategy = strategy
-            self.save_service(strategy.__class__.__name__)
+            service_name = strategy.__class__.__name__
+            self.save_service(name = service_name,
+                              domain = domain,
+                              hostname = hostname)
         elif self.load_service():
-            saved_service = self.load_service()
+            saved_service = self.load_service().get('name')
             if not saved_service:
                 print("No service selected because the system has not joined a domain before. Please run 'join --service ...' first.")
                 sys.exit(1)
@@ -64,12 +67,21 @@ class DomainManager:
             if not self.strategy:
                 print("No service selected because the system has not joined a domain before. Please run 'join --service ...' first.")
                 sys.exit(1)
-            self.save_service(strategy.__class__.__name__)
+            service_name = strategy.__class__.__name__
+            self.save_service(name = service_name,
+                              domain = domain,
+                              hostname = hostname)
 
         self.domain_status = self.status()
 
-    def save_service(self, service_name):
-        config = {'service': {'name': service_name}}
+    def save_service(self, name, domain, hostname):
+        config = {
+            'service': {
+                'name': name,
+                'domain': domain,
+                'hostname': hostname
+            }
+        }
         with open(USER_PROFILE_PATH, 'w') as f:
             toml.dump(config, f)
 
@@ -78,7 +90,12 @@ class DomainManager:
             return None
         with open(USER_PROFILE_PATH, 'r') as f:
             config = toml.load(f)
-        return config.get('service', {}).get('name')
+        service = config.get('service', {})
+        return {
+            'name': service.get('name'),
+            'domain': service.get('domain'),
+            'hostname': service.get('hostname')
+        }
 
     def create_strategy(self, name):
         if name == "SSSDService":
@@ -98,6 +115,12 @@ class DomainManager:
         if self.domain_status:
             print("The leave process has been initiated.")
             self.strategy.leave(user, password)
+            if self.load_service():
+                domain = self.load_service().get('domain')
+                hostname = self.load_service().get('hostname')
+                check_ad = domain_operations.check_hostname_in_ad(domain, hostname, user, password)
+                if not check_ad:
+                    print("The user could not be deleted from AD. Delete it via AD.")
             print("The leave process is completed")
 
     def status(self):
@@ -173,7 +196,7 @@ def main():
 
     if args.command == "join":
         manager = get_manager(args.service)
-        domain_manager = DomainManager(manager)
+        domain_manager = DomainManager(manager, args.domain, os.uname()[1])
         domain_manager.join(
             comp_name=os.uname()[1],
             domain=args.domain,
