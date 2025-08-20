@@ -34,7 +34,7 @@ if os.path.exists(changelog):
 
 data_files = [
     (
-        "/usr/share/pardus/pardus-domain-settings/pardus-domain-cli/src/",
+        "/usr/share/pardus/pardus-domain-cli/src/",
         ["src/Main.py", "src/__version__"],
     ),
     ("/usr/bin/", ["pardus-domain-cli"]),
