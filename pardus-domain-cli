@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ $UID -eq 0 ]] ; then
-    exec /usr/bin/python3 /usr/share/pardus/pardus-domain-settings/pardus-domain-cli/src/Main.py "$@"
+    exec /usr/bin/python3 /usr/share/pardus/pardus-domain-cli/src/Main.py "$@"
 else
     echo "You must be root!"
     exit 1
