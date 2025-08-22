@@ -8,6 +8,7 @@ from pardus_domain_joiner import domain_operations
 from pardus_domain_joiner import config_manager
 from pardus_domain_joiner import domain_joiner_realmd
 from pardus_domain_joiner import domain_joiner_winbind
+from pardus_domain_joiner import domain_joiner_ldap
 import toml
 
 CONFIG_DIR = "/usr/share/pardus/pardus-domain-cli/config"
@@ -118,10 +119,25 @@ class DomainManager:
             if self.load_service():
                 domain = self.load_service().get('domain')
                 hostname = self.load_service().get('hostname')
-                check_ad = domain_operations.check_hostname_in_ad(domain, hostname, user, password)
-                if not check_ad:
-                    print("The user could not be deleted from AD. Delete it via AD.")
+                self.check_hostname_in_ad(domain, hostname, user, password)
             print("The leave process is completed")
+
+    def check_hostname_in_ad(self, domain, hostname, user, password):
+        ldap_user = f"{user}@{domain.upper()}"
+        ldap_check = domain_joiner_ldap.LDAP(domain, ldap_user, password)
+        print("Authenticating the user on LDAP...")
+
+        is_authenticate = ldap_check.authenticate()
+        if not is_authenticate:
+            print("Error! Wrong username or password.")
+            ldap_check._unbind_connection()
+            sys.exit(1)
+
+        is_hostname_in_ad = ldap_check.check_computer_exists_in_ad(hostname)
+        if is_hostname_in_ad:
+            print("You have successfully left the domain. But your computer still exists in Active Directory.")
+            ldap_check._unbind_connection()
+            sys.exit(1)
 
     def status(self):
         realm = self.strategy.status()
