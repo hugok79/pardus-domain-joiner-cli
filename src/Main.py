@@ -4,174 +4,148 @@ import os
 import logging
 import sys
 
+import ldap
+import managers.ConfigManager as ConfigManager
 from pardus_domain_joiner import domain_operations
-from pardus_domain_joiner import config_manager
-from pardus_domain_joiner import domain_joiner_realmd
-from pardus_domain_joiner import domain_joiner_winbind
 from pardus_domain_joiner import domain_joiner_ldap
-import toml
-
-CONFIG_DIR = "/usr/share/pardus/pardus-domain-cli/config"
-CONFIG_FILE = "pdj_cli_config.toml"
-USER_PROFILE_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE)
-
-os.makedirs(CONFIG_DIR, exist_ok=True)
-
-class SSSDService:
-    def join(self, comp_name, domain, user, password, ou, workgroup=None):
-        domain_operations.join(comp_name, domain, user, password, ou, realmd=True)
-
-    def leave(self, user, password):
-        domain_operations.leave(realmd=True, user=user, password=password)
-
-    def status(self):
-        return domain_operations.list(realmd=True)
-
-    def discover(self, domain):
-        domain_joiner_realmd.discover(domain)
 
 
-class WinbindService:
-    def join(self, comp_name, domain, username, password, ou, workgroup):
-
-        if workgroup is None:
-            workgroup = domain_operations.get_netbios_name(domain)
-
-        domain_operations.join(comp_name, domain, username, password, ou, workgroup, winbind=True)
-
-    def leave(self, user, password):
-        domain_operations.leave(winbind=True, user=user, password=password)
-
-    def status(self):
-        return domain_operations.list(winbind=True)
-
-    def discover(self):
-        domain_joiner_winbind.discover()
+class Model:
+    domain = ""
+    computer_name = ""
+    username = ""
+    password = ""
+    organizational_unit = ""
+    connection_type = ""
+    hostname = ""
 
 
-class DomainManager:
-    def __init__(self, strategy=None, domain=None, hostname=None):
-        if strategy:
-            self.strategy = strategy
-            service_name = strategy.__class__.__name__
-            self.save_service(name = service_name,
-                              domain = domain,
-                              hostname = hostname)
-        elif self.load_service():
-            saved_service = self.load_service().get('name')
-            if not saved_service:
-                print("No service selected because the system has not joined a domain before. Please run 'join --service ...' first.")
-                sys.exit(1)
-            self.strategy = self.create_strategy(saved_service)
-        else:
-            self.strategy = strategy
-            if not self.strategy:
-                print("No service selected because the system has not joined a domain before. Please run 'join --service ...' first.")
-                sys.exit(1)
-            service_name = strategy.__class__.__name__
-            self.save_service(name = service_name,
-                              domain = domain,
-                              hostname = hostname)
+def read_config():
+    config = ConfigManager.read_config()
 
-        self.domain_status = self.status()
+    model = Model()
+    model.username = config["username"]
+    model.domain = config["domain"]
+    model.connection_type = config["connection_type"]
+    model.organizational_unit = config["organizational_unit"]
+    model.hostname = os.uname()[1]
 
-    def save_service(self, name, domain, hostname):
-        config = {
-            'service': {
-                'name': name,
-                'domain': domain,
-                'hostname': hostname
-            }
-        }
-        with open(USER_PROFILE_PATH, 'w') as f:
-            toml.dump(config, f)
+    return model
 
-    def load_service(self):
-        if not os.path.exists(USER_PROFILE_PATH):
-            return None
-        with open(USER_PROFILE_PATH, 'r') as f:
-            config = toml.load(f)
-        service = config.get('service', {})
-        return {
-            'name': service.get('name'),
-            'domain': service.get('domain'),
-            'hostname': service.get('hostname')
-        }
 
-    def create_strategy(self, name):
-        if name == "SSSDService":
-            return SSSDService()
-        elif name == "WinbindService":
-            return WinbindService()
-        else:
-            raise ValueError(f"Unknown service: {name}")
+def save_config(model):
+    config = vars(model).copy()
 
-    def join(self, comp_name, domain, user, password, ou=None, workgroup=None):
-        if not self.domain_status:
-            print("The join process has been initiated.")
-            self.strategy.join(comp_name, domain, user, password, ou, workgroup)
-            print("The join process is completed")
+    config.pop("password", None)
+    config.pop("hostname", None)
+    config.pop("computer_name", None)
 
-    def leave(self, user, password):
-        if self.domain_status:
-            print("The leave process has been initiated.")
-            self.strategy.leave(user, password)
-            if self.load_service():
-                domain = self.load_service().get('domain')
-                hostname = self.load_service().get('hostname')
-                self.check_hostname_in_ad(domain, hostname, user, password)
-            print("The leave process is completed")
+    ConfigManager.save_config(config)
 
-    def check_hostname_in_ad(self, domain, hostname, user, password):
-        ldap_user = f"{user}@{domain.upper()}"
-        ldap_check = domain_joiner_ldap.LDAP(domain, ldap_user, password)
+
+def authenticate_user_in_ad(domain, hostname, username, password):
+    ldap_user = f"{username}@{domain}"
+    ldap_check = domain_joiner_ldap.LDAP(domain, ldap_user, password)
+
+    try:
+        ldap_check.authenticate()
         print("Authenticating the user on LDAP...")
 
-        is_authenticate = ldap_check.authenticate()
-        if not is_authenticate:
-            print("Error! Wrong username or password.")
-            ldap_check._unbind_connection()
-            sys.exit(1)
-
         is_hostname_in_ad = ldap_check.check_computer_exists_in_ad(hostname)
+        print("is hostname exists in AD:", is_hostname_in_ad)
+
         if is_hostname_in_ad:
             print("You have successfully left the domain. But your computer still exists in Active Directory.")
-            ldap_check._unbind_connection()
-            sys.exit(1)
 
-    def status(self):
-        realm = self.strategy.status()
-        print("Querying domain name information...")
-        if realm:
-            print("Domain Name: ", realm)
-            print("You are in the domain.")
-            return True
-        else:
-            print("Domain information not found.")
-            print("You are not in the domain.")
-            return False
+        ldap_check._unbind_connection()
 
-    def discover(self, domain):
-        self.strategy.discover(domain)
+    except ldap.INVALID_CREDENTIALS:
+        print("Invalid credentials.")
+        ldap_check._unbind_connection()
+        return
+    except ldap.SERVER_DOWN:
+        print("Server is not reachable.")
+        ldap_check._unbind_connection()
+        return
+    except ldap.LDAPError as err:
+        print("Other LDAPError:", err)
+        ldap_check._unbind_connection()
+        return
+    except Exception as e:
+        print("LDAP Authenticate Exception:", e)
+        ldap_check._unbind_connection()
+        return
+
+def join_domain(
+    hostname, domain, user, password, ouaddress, connection_type, workgroup
+):
+    is_winbind = True if connection_type == "winbind" else False
+    if is_winbind:
+        workgroup = domain_operations.get_netbios_name(domain)
+        print("workgroup", workgroup)
+
+    domain_operations.join(
+        hostname,
+        domain,
+        user,
+        password,
+        ouaddress=ouaddress,
+        realmd=connection_type == "sssd",
+        winbind=connection_type == "winbind",
+        workgroup=workgroup,
+    )
+
+    ouaddress = ouaddress or ""
+
+    model = Model()
+    model.domain = domain
+    model.username = user
+    model.hostname = os.uname()[1]
+    model.connection_type = connection_type
+    model.organizational_unit = ouaddress
+    save_config(model)
 
 
-def change_hostname(comp_name):
-    print("Hostname is being changed.")
-    config_manager.set_hostname(comp_name)
+def leave_domain(username, password):
+    config = read_config()
+    connection_type = config.connection_type
+    domain = config.domain
+    hostname = config.hostname
+
+    is_winbind = True if connection_type == "winbind" else False
+
+    domain_operations.leave(
+        user=username,
+        password=password,
+        winbind=is_winbind,
+        realmd=(not is_winbind),
+    )
+    authenticate_user_in_ad(domain, hostname, username, password)
 
 
-def get_manager(service):
-    if service == "sssd":
-        return SSSDService()
-    elif service == "winbind":
-        return WinbindService()
-    else:
-        raise ValueError("Unknown service")
+def status():
+    joined_domain_name = domain_operations.list(realmd=True)
+    if joined_domain_name:
+        print(f"joined={joined_domain_name}")
+        exit(0)
+
+    joined_domain_name = domain_operations.list(winbind=True)
+    if joined_domain_name:
+        print(f"joined={joined_domain_name}")
+        exit(0)
+
+
+def change_hostname(hostname):
+    domain_operations.config_manager.set_hostname(hostname)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CLI application for Pardus Domain Joiner. You must run it with sudo.")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable debug logs")
+    parser = argparse.ArgumentParser(
+        description="CLI application for Pardus Domain Joiner. You must run it with sudo."
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable debug logs"
+    )
 
     subparser = parser.add_subparsers(dest="command", required=True)
 
@@ -198,43 +172,43 @@ def main():
 
     # change hostname
     change_parser = subparser.add_parser("change", help="Change the hostname")
-    change_parser.add_argument("computer", help="Computer name")
+    change_parser.add_argument("computer", help="Hostname")
 
     args = parser.parse_args()
+    model = read_config()
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s"
+        format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
     if hasattr(args, "password") and not args.password:
         args.password = getpass.getpass(f"Password for {args.user}: ")
 
     if args.command == "join":
-        manager = get_manager(args.service)
-        domain_manager = DomainManager(manager, args.domain, os.uname()[1])
-        domain_manager.join(
-            comp_name=os.uname()[1],
+        status()
+        join_domain(
+            hostname=os.uname()[1],
             domain=args.domain,
             user=args.user,
             password=args.password,
-            ou=getattr(args, "ou", None),
-            workgroup=getattr(args, "workgroup", None)
+            ouaddress=getattr(args, "ou", None),
+            connection_type=args.service,
+            workgroup=getattr(args, "workgroup", None),
         )
     elif args.command == "leave":
-        domain_manager = DomainManager()
-        domain_manager.leave(user=args.user, password=args.password)
+        leave_domain(username=args.user, password=args.password)
+        print("You need to restart your computer")
     elif args.command == "status":
-        domain_manager = DomainManager()
+        status()
     elif args.command == "info":
         discover_domain = domain_operations.discover_domain(args.domain)
         if discover_domain:
-            print("Domain discovered:\n",
-                  discover_domain)
+            print("Domain discovered:\n", discover_domain)
         else:
             print(f"Server not found: {args.domain}")
     elif args.command == "change":
-        change_hostname(comp_name=args.computer)
+        change_hostname(hostname=args.computer)
 
 
 if __name__ == "__main__":

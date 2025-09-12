@@ -37,6 +37,10 @@ data_files = [
         "/usr/share/pardus/pardus-domain-cli/src/",
         ["src/Main.py", "src/__version__"],
     ),
+    (
+        "/usr/share/pardus/pardus-domain-cli/src/managers",
+        ["src/managers/ConfigManager.py"],
+    ),
     ("/usr/bin/", ["pardus-domain-cli"]),
 ] + create_mo_files()
 
