@@ -135,9 +135,9 @@ def status():
         exit(0)
 
 
-def change_hostname(hostname):
+"""def change_hostname(hostname):
     domain_operations.config_manager.set_hostname(hostname)
-
+"""
 
 def main():
     parser = argparse.ArgumentParser(
@@ -157,6 +157,7 @@ def main():
     join_parser.add_argument("-p", "--password")
     join_parser.add_argument("--ou")
     join_parser.add_argument("--workgroup")
+    join_parser.add_argument("--hostname")
 
     # leave
     leave_parser = subparser.add_parser("leave", help="Leave the domain")
@@ -169,10 +170,6 @@ def main():
     # info
     info_parser = subparser.add_parser("info", help="Show discovered domain name")
     info_parser.add_argument("domain", help="Domain name")
-
-    # change hostname
-    change_parser = subparser.add_parser("change", help="Change the hostname")
-    change_parser.add_argument("computer", help="Hostname")
 
     args = parser.parse_args()
     model = read_config()
@@ -188,7 +185,7 @@ def main():
     if args.command == "join":
         status()
         join_domain(
-            hostname=os.uname()[1],
+            hostname=getattr(args, "hostname", os.uname()[1]).strip(),
             domain=args.domain,
             user=args.user,
             password=args.password,
@@ -207,8 +204,6 @@ def main():
             print("Domain discovered:\n", discover_domain)
         else:
             print(f"Server not found: {args.domain}")
-    elif args.command == "change":
-        change_hostname(hostname=args.computer)
 
 
 if __name__ == "__main__":
