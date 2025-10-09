@@ -142,10 +142,10 @@ def leave_domain(username, password):
         sys.exit(1)
 
     domain_operations.leave(
-                user=username,
-                password=password,
-                winbind=is_winbind,
-                realmd=(not is_winbind),
+        user=username,
+        password=password,
+        winbind=is_winbind,
+        realmd=(not is_winbind),
     )
     print("You need to restart your computer")
     check_hostname_in_ad(domain, hostname, username, password)
