@@ -43,38 +43,57 @@ def save_config(model):
     ConfigManager.save_config(config)
 
 
-def authenticate_user_in_ad(domain, hostname, username, password):
+def authenticate_user_in_ad(domain, username, password):
     ldap_user = f"{username}@{domain}"
-    ldap_check = domain_joiner_ldap.LDAP(domain, ldap_user, password)
+    ldap_conn = domain_joiner_ldap.LDAP(domain, ldap_user, password)
 
     try:
-        ldap_check.authenticate()
-        print("Authenticating the user on LDAP...")
+        if not username or not password:
+            print("canceled")
+            return None
 
-        is_hostname_in_ad = ldap_check.check_computer_exists_in_ad(hostname)
-        print("is hostname exists in AD:", is_hostname_in_ad)
-
-        if is_hostname_in_ad:
-            print("You have successfully left the domain. But your computer still exists in Active Directory.")
-
-        ldap_check._unbind_connection()
+        ldap_conn.authenticate()
 
     except ldap.INVALID_CREDENTIALS:
         print("Invalid credentials.")
-        ldap_check._unbind_connection()
-        return
+        return None
     except ldap.SERVER_DOWN:
         print("Server is not reachable.")
-        ldap_check._unbind_connection()
-        return
+        return None
     except ldap.LDAPError as err:
-        print("Other LDAPError:", err)
-        ldap_check._unbind_connection()
-        return
+        print("LDAP Error:", err)
+        return None
     except Exception as e:
         print("LDAP Authenticate Exception:", e)
-        ldap_check._unbind_connection()
-        return
+        return None
+    else:
+        return ldap_conn
+
+
+def check_hostname_in_ad(domain, hostname, username, password):
+    ldap_conn = authenticate_user_in_ad(domain, username, password)
+    if ldap_conn is None:
+        return False
+
+    try:
+        print(f"Checking if hostname {hostname} exists in AD...")
+        exists = ldap_conn.check_computer_exists_in_ad(hostname)
+        print("Hostname exists in AD:", exists)
+
+        if exists:
+            print("Your computer still exists in Active Directory.")
+    except ldap.LDAPError as err:
+        print("Other LDAPError:", err)
+        sys.exit(1)
+    except Exception as e:
+        print("LDAP Authenticate Exception:", e)
+        sys.exit(1)
+    finally:
+        try:
+            ldap_conn._unbind_connection()
+        except Exception:
+            pass
+
 
 def join_domain(
     hostname, domain, user, password, ouaddress, connection_type, workgroup
@@ -82,7 +101,10 @@ def join_domain(
     is_winbind = True if connection_type == "winbind" else False
     if is_winbind:
         workgroup = domain_operations.get_netbios_name(domain)
-        print("workgroup", workgroup)
+        print("Workgroup: ", workgroup)
+
+    if hostname is None:
+        hostname = os.uname()[1]
 
     domain_operations.join(
         hostname,
@@ -112,15 +134,21 @@ def leave_domain(username, password):
     domain = config.domain
     hostname = config.hostname
 
-    is_winbind = True if connection_type == "winbind" else False
+    is_winbind = connection_type == "winbind"
+
+    ldap_auth = authenticate_user_in_ad(domain, username, password)
+    if ldap_auth is None:
+        print("Authentication failed. Cannot leave the domain")
+        sys.exit(1)
 
     domain_operations.leave(
-        user=username,
-        password=password,
-        winbind=is_winbind,
-        realmd=(not is_winbind),
+                user=username,
+                password=password,
+                winbind=is_winbind,
+                realmd=(not is_winbind),
     )
-    authenticate_user_in_ad(domain, hostname, username, password)
+    print("You need to restart your computer")
+    check_hostname_in_ad(domain, hostname, username, password)
 
 
 def status():
@@ -185,7 +213,7 @@ def main():
     if args.command == "join":
         status()
         join_domain(
-            hostname=getattr(args, "hostname", os.uname()[1]).strip(),
+            hostname=getattr(args, "hostname", None),
             domain=args.domain,
             user=args.user,
             password=args.password,
@@ -195,7 +223,6 @@ def main():
         )
     elif args.command == "leave":
         leave_domain(username=args.user, password=args.password)
-        print("You need to restart your computer")
     elif args.command == "status":
         status()
     elif args.command == "info":
