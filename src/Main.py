@@ -9,6 +9,23 @@ import managers.ConfigManager as ConfigManager
 from pardus_domain_joiner import domain_operations
 from pardus_domain_joiner import domain_joiner_ldap
 
+error_patterns = {
+    "ou_errors": {
+        "The organizational unit does not exist": "Invalid organizational unit!",
+        "Couldn't lookup computer container": "Invalid organizational unit!",
+        "failed to precreate account in ou": "Invalid organizational unit!",
+        "but is not in the desired organizational unit": "Invalid organizational unit!"
+    },
+    "auth_errors": {
+        "Preauthentication failed": "Preauthentication failed!",
+        "not found in Kerberos database": "Preauthentication failed!",
+        "The attempted logon is invalid": "Preauthentication failed!"
+    },
+    "other": {
+        "\"workgroup\" set to '',": "Warning: Workgroup is empty. You can set it using the --workgroup parameter."
+    }
+}
+
 
 class Model:
     domain = ""
@@ -99,14 +116,14 @@ def join_domain(
     hostname, domain, user, password, ouaddress, connection_type, workgroup
 ):
     is_winbind = True if connection_type == "winbind" else False
-    if is_winbind:
+    if is_winbind and workgroup is None:
         workgroup = domain_operations.get_netbios_name(domain)
         print("Workgroup: ", workgroup)
 
     if hostname is None:
         hostname = os.uname()[1]
 
-    domain_operations.join(
+    result = domain_operations.join(
         hostname,
         domain,
         user,
@@ -116,6 +133,12 @@ def join_domain(
         winbind=connection_type == "winbind",
         workgroup=workgroup,
     )
+
+    if result:
+        for category, pattern in error_patterns.items():
+            for key, message in pattern.items():
+                if key in result:
+                    print(message)
 
     ouaddress = ouaddress or ""
 
