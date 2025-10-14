@@ -170,8 +170,8 @@ def leave_domain(username, password):
         winbind=is_winbind,
         realmd=(not is_winbind),
     )
-    print("You need to restart your computer")
     check_hostname_in_ad(domain, hostname, username, password)
+    print("Successfully left the domain. Please restart your computer.")
 
 
 def status():
