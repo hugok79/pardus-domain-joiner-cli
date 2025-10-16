@@ -1,3 +1,14 @@
+pardus-domain-cli (1.0.7) unstable; urgency=medium
+
+  [ busra ]
+  * remove hostname change command; set hostname on join
+  * fix: restrict domain unbind to successful LDAP authentication
+  * fix indentation
+  * add error messages for domain join failures
+  * fix message for leaving domain
+
+ -- Büşra ÇAĞLIYAN <busra.cagliyan@pardus.org.tr>  Thu, 16 Oct 2025 10:05:57 +0300
+
 pardus-domain-cli (1.0.6) unstable; urgency=medium
 
   [ busra ]
