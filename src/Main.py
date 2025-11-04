@@ -245,6 +245,10 @@ def main():
             workgroup=getattr(args, "workgroup", None),
         )
     elif args.command == "leave":
+        joined_domain_name = domain_operations.list(realmd=True) or domain_operations.list(winbind=True)
+        if not joined_domain_name:
+            print("This machine has not joined the domain before.")
+            exit(1)
         leave_domain(username=args.user, password=args.password)
     elif args.command == "status":
         status()
