@@ -200,6 +200,8 @@ def main():
 
     subparser = parser.add_subparsers(dest="command", required=True)
 
+    subparser.add_parser("version", help="Show version")
+
     # join
     join_parser = subparser.add_parser("join", help="Join the domain")
     join_parser.add_argument("service", choices=["sssd", "winbind"])
@@ -258,6 +260,17 @@ def main():
             print("Domain discovered:\n", discover_domain)
         else:
             print(f"Server not found: {args.domain}")
+    elif args.command == "version":
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(current_dir, "__version__")
+        default_version = "1.0.8"
+
+        if os.path.exists(file_path):
+            with open(file_path, "r") as f:
+                version = f.readline().strip()
+            print(f"Version: {version}")
+        else:
+            print(f"Version: {default_version}")
 
 
 if __name__ == "__main__":
