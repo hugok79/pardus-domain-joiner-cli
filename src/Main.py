@@ -186,16 +186,9 @@ def status():
         exit(0)
 
 
-"""def change_hostname(hostname):
-    domain_operations.config_manager.set_hostname(hostname)
-"""
-
 def main():
     parser = argparse.ArgumentParser(
         description="CLI application for Pardus Domain Joiner. You must run it with sudo."
-    )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable debug logs"
     )
 
     subparser = parser.add_subparsers(dest="command", required=True)
@@ -226,11 +219,6 @@ def main():
 
     args = parser.parse_args()
     model = read_config()
-
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
 
     if hasattr(args, "password") and not args.password:
         args.password = getpass.getpass(f"Password for {args.user}: ")
