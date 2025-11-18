@@ -1,9 +1,13 @@
 #!/bin/bash
 
+TEXTDOMAIN=pardus-domain-cli
+TEXTDOMAINDIR=/usr/share/locale
+export TEXTDOMAIN TEXTDOMAINDIR
+
 if [[ $UID -eq 0 ]] ; then
     exec /usr/bin/python3 /usr/share/pardus/pardus-domain-cli/src/Main.py "$@"
 else
-    echo "You must be root!"
+    echo "$(gettext "You must be root!")"
     exit 1
 fi
 

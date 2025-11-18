@@ -6,142 +6,145 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: pardus-domain-cli\n"
+"Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-27 11:46+0300\n"
-"PO-Revision-Date: 2025-06-26 15:34+0300\n"
+"POT-Creation-Date: 2025-11-18 14:21+0300\n"
+"PO-Revision-Date: 2025-11-18 10:59+0300\n"
 "Last-Translator: busra.cagliyan <busra.cagliyan@pardus.org.tr>\n"
 "Language-Team: Turkish <dev@pardus.org.tr>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.2.2\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"X-Generator: Gtranslator 42.0\n"
 
-#: src/Main.py:25
-msgid "Cli application for pardus domain joiner. You must run it with sudo"
+#: src/Main.py:31 src/Main.py:32 src/Main.py:33 src/Main.py:34
+msgid "Invalid organizational unit!"
+msgstr "Organizasyonel birim"
+
+#: src/Main.py:37 src/Main.py:38 src/Main.py:39
+msgid "Preauthentication failed!"
+msgstr "Ön doğrulama başarısız oldu!"
+
+#: src/Main.py:43
+msgid ""
+"Warning: Workgroup is empty. You can set it using the --workgroup parameter."
 msgstr ""
-"Pardus domain joiner için Cli uygulaması. Bunu sudo ile çalıştırmanız "
-"gerekiyor"
+"Uyarı: Workgroup boş. Bunu --workgroup parametresini kullanarak "
+"ayarlayabilirsiniz."
 
-#: src/Main.py:27
-msgid "Use sssd service for domain operations"
-msgstr "Etki alanı işlemleri için sssd servisini kullanın"
+#: src/Main.py:87
+msgid "no username or password"
+msgstr "Parolayı ve kullanıcı adını giriniz!"
 
-#: src/Main.py:28
-msgid "Use winbind service for domain operations"
-msgstr "Etki alanı işlemleri için winbind servisini kullanın"
+#: src/Main.py:93
+msgid "Invalid credentials."
+msgstr "Geçersiz kimlik bilgileri."
 
-#: src/Main.py:29
-msgid "Discover domain name"
-msgstr "Alan adını keşfedin"
+#: src/Main.py:96
+msgid "Server is not reachable."
+msgstr "Sunucuya ulaşılamıyor."
 
-#: src/Main.py:30
-msgid "Change hostname"
-msgstr "Ana bilgisayar adını değiştirin"
+#: src/Main.py:99
+msgid "LDAP Error:"
+msgstr "LDAP Hatası:"
 
-#: src/Main.py:32
-msgid "Join to the domain"
+#: src/Main.py:102 src/Main.py:124
+msgid "LDAP Authenticate Exception:"
+msgstr "LDAP Kimlik Doğrulama İstisnası:"
+
+#: src/Main.py:114
+msgid "Checking if hostname {} exists in AD..."
+msgstr "AD'de {} bilgisayar isminin var olup olmadığı kontrol ediliyor..."
+
+#: src/Main.py:119
+msgid "Your computer still exists in Active Directory."
+msgstr "Bilgisayarınız hala Active Directory'de bulunmaktadır."
+
+#: src/Main.py:121
+msgid "Other LDAPError:"
+msgstr "Diğer LDAPError:"
+
+#: src/Main.py:182
+msgid "Authentication failed. Cannot leave the domain"
+msgstr "Kimlik doğrulama başarısız oldu. Etki alanından ayrılamazsınız"
+
+#: src/Main.py:192
+msgid "Successfully left the domain. Please restart your computer."
+msgstr ""
+"Etki alanından başarıyla ayrıldınız. Lütfen bilgisayarınızı yeniden başlatın."
+
+#: src/Main.py:198 src/Main.py:203
+msgid "joined={}"
+msgstr "katıldı={}"
+
+#: src/Main.py:209
+msgid "CLI application for Pardus Domain Joiner. You must run it with sudo."
+msgstr ""
+"Pardus domain joiner için CLI uygulaması. Bunu sudo ile çalıştırmanız "
+"gerekiyor."
+
+#: src/Main.py:216
+msgid "show this help message and exit"
+msgstr "yardım mesajını göster ve çık"
+
+#: src/Main.py:221
+msgid "Show version"
+msgstr "Sürümü göster"
+
+#: src/Main.py:224
+msgid "Join a machine to the domain"
 msgstr "Etki alanına dahil edin"
 
-#: src/Main.py:33
-msgid "Leave from the domain"
-msgstr "Etki alanından ayrılın"
-
-#: src/Main.py:34
-msgid "Check if it is in the domain"
-msgstr "Etki alanında olup olmadığını kontrol edin"
-
-#: src/Main.py:35
-msgid "Discover if there is a domain name"
-msgstr "Bir alan adı olup olmadığını keşfedin"
-
-#: src/Main.py:36 src/Main.py:37
-msgid "For sssd service"
-msgstr "Sssd servisi için"
-
-#: src/Main.py:38 src/Main.py:39
-msgid "For winbind service"
-msgstr "Winbind servisi için"
-
-#: src/Main.py:41
+#: src/Main.py:226 src/Main.py:243
 msgid "Domain name"
 msgstr "Etki alanı adı"
 
-#: src/Main.py:42
-msgid "Domain username"
+#: src/Main.py:227 src/Main.py:235
+msgid "Username"
 msgstr "Etki alanı kullanıcı adı"
 
-#: src/Main.py:43
-msgid "Domain user's password"
+#: src/Main.py:228 src/Main.py:236
+msgid "User password"
 msgstr "Etki alanı kullanıcısının parolası"
 
-#: src/Main.py:44
-msgid "Computer name"
-msgstr "Bilgisayar adı"
-
-#: src/Main.py:45
+#: src/Main.py:229
 msgid "Organizational unit"
 msgstr "Organizasyonel birim"
 
-#: src/Main.py:46
-msgid "Configuring samba settings for sssd service. Type 'True' or 'False'"
-msgstr ""
-"Sssd servisi için samba ayarlarını yapılandırma. 'True' veya 'False' yazın"
+#: src/Main.py:234
+msgid "Leave the domain"
+msgstr "Etki alanından ayrılın"
 
-#: src/Main.py:59
-msgid "You have selected the sssd service."
-msgstr "Sssd servisini seçtiniz."
+#: src/Main.py:239
+msgid "Check domain status"
+msgstr "Etki alanı durumunu kontrol edin"
 
-#: src/Main.py:61 src/Main.py:84
-msgid "Join process is starting."
-msgstr "Dahil edilme işlemi başlatıldı."
+#: src/Main.py:242
+msgid "Show discovered domain name"
+msgstr "Etki alanı adını keşfedin"
 
-#: src/Main.py:65 src/Main.py:88
-msgid "Leave process is starting."
-msgstr "Ayrılma işlemi başlatıldı."
+#: src/Main.py:249
+msgid "Password for {}: "
+msgstr "{} için parola: "
 
-#: src/Main.py:71 src/Main.py:108
-msgid "Please enter domain name!"
-msgstr "Lütfen alan adını giriniz!"
+#: src/Main.py:265
+msgid "This machine has not joined the domain before."
+msgstr "Bu makine daha önce etki alanına katılmadı."
 
-#: src/Main.py:80 src/Main.py:104
-msgid "Select the action you want to perform!"
-msgstr "Gerçekleştirmek istediğiniz eylemi seçin!"
+#: src/Main.py:273
+msgid "Domain discovered:\n"
+msgstr "Alan adı keşfedildi:\n"
 
-#: src/Main.py:82
-msgid "You have selected the winbind service."
-msgstr "Winbind servisini seçtiniz."
+#: src/Main.py:275
+msgid "Server not found: {}"
+msgstr "Sunucu bulunamadı: {}"
 
-#: src/Main.py:90
-msgid "Please enter username and password!"
-msgstr "Parolayı ve kullanıcı adını giriniz!"
+#: src/Main.py:284 src/Main.py:286
+msgid "Version: {}"
+msgstr "Sürüm: {}"
 
-#: src/Main.py:106
-msgid "Domain name is being checked."
-msgstr "Etki alanı adı kontrol ediliyor."
-
-#: src/Main.py:112
-msgid "Hostname is being changed."
-msgstr "Ana bilgisayar adı değiştirildi."
-
-#: src/Main.py:114
-msgid "Please enter computer name and domain name!"
-msgstr "Lütfen bilgisayar adını ve alan adını giriniz!"
-
-#: src/Main.py:120
-msgid ""
-"Please specify which service to use: sssd or winbind.\n"
-"You can use the -i option to view domain information."
-msgstr ""
-"Lütfen hangi servisi kullanacağınızı belirtin: sssd veya winbind.\n"
-"Alan bilgilerini görüntülemek için -i seçeneğini kullanabilirsiniz."
-
-#: src/Main.py:125
-msgid "Error: The following arguments are required!"
-msgstr "Hata: Aşağıdaki argümanlar gerekmektedir!"
-
-#: src/Main.py:126
-msgid "Please enter other commands:\n"
-msgstr "Lütfen diğer komutları girin:\n"
+#: pardus-domain-cli:10
+msgid "You must be root!"
+msgstr "Bu işlemi gerçekleştirmek için root olmalısınız!"

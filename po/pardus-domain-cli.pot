@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-27 11:46+0300\n"
+"POT-Creation-Date: 2025-11-18 14:21+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,124 +17,127 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/Main.py:25
-msgid "Cli application for pardus domain joiner. You must run it with sudo"
+#: src/Main.py:31 src/Main.py:32 src/Main.py:33 src/Main.py:34
+msgid "Invalid organizational unit!"
 msgstr ""
 
-#: src/Main.py:27
-msgid "Use sssd service for domain operations"
-msgstr ""
-
-#: src/Main.py:28
-msgid "Use winbind service for domain operations"
-msgstr ""
-
-#: src/Main.py:29
-msgid "Discover domain name"
-msgstr ""
-
-#: src/Main.py:30
-msgid "Change hostname"
-msgstr ""
-
-#: src/Main.py:32
-msgid "Join to the domain"
-msgstr ""
-
-#: src/Main.py:33
-msgid "Leave from the domain"
-msgstr ""
-
-#: src/Main.py:34
-msgid "Check if it is in the domain"
-msgstr ""
-
-#: src/Main.py:35
-msgid "Discover if there is a domain name"
-msgstr ""
-
-#: src/Main.py:36 src/Main.py:37
-msgid "For sssd service"
-msgstr ""
-
-#: src/Main.py:38 src/Main.py:39
-msgid "For winbind service"
-msgstr ""
-
-#: src/Main.py:41
-msgid "Domain name"
-msgstr ""
-
-#: src/Main.py:42
-msgid "Domain username"
+#: src/Main.py:37 src/Main.py:38 src/Main.py:39
+msgid "Preauthentication failed!"
 msgstr ""
 
 #: src/Main.py:43
-msgid "Domain user's password"
+msgid ""
+"Warning: Workgroup is empty. You can set it using the --workgroup parameter."
 msgstr ""
 
-#: src/Main.py:44
-msgid "Computer name"
+#: src/Main.py:87
+msgid "no username or password"
 msgstr ""
 
-#: src/Main.py:45
-msgid "Organizational unit"
+#: src/Main.py:93
+msgid "Invalid credentials."
 msgstr ""
 
-#: src/Main.py:46
-msgid "Configuring samba settings for sssd service. Type 'True' or 'False'"
+#: src/Main.py:96
+msgid "Server is not reachable."
 msgstr ""
 
-#: src/Main.py:59
-msgid "You have selected the sssd service."
+#: src/Main.py:99
+msgid "LDAP Error:"
 msgstr ""
 
-#: src/Main.py:61 src/Main.py:84
-msgid "Join process is starting."
-msgstr ""
-
-#: src/Main.py:65 src/Main.py:88
-msgid "Leave process is starting."
-msgstr ""
-
-#: src/Main.py:71 src/Main.py:108
-msgid "Please enter domain name!"
-msgstr ""
-
-#: src/Main.py:80 src/Main.py:104
-msgid "Select the action you want to perform!"
-msgstr ""
-
-#: src/Main.py:82
-msgid "You have selected the winbind service."
-msgstr ""
-
-#: src/Main.py:90
-msgid "Please enter username and password!"
-msgstr ""
-
-#: src/Main.py:106
-msgid "Domain name is being checked."
-msgstr ""
-
-#: src/Main.py:112
-msgid "Hostname is being changed."
+#: src/Main.py:102 src/Main.py:124
+msgid "LDAP Authenticate Exception:"
 msgstr ""
 
 #: src/Main.py:114
-msgid "Please enter computer name and domain name!"
+msgid "Checking if hostname {} exists in AD..."
 msgstr ""
 
-#: src/Main.py:120
-msgid ""
-"Please specify which service to use: sssd or winbind.\n"
-"You can use the -i option to view domain information."
+#: src/Main.py:119
+msgid "Your computer still exists in Active Directory."
 msgstr ""
 
-#: src/Main.py:125
-msgid "Error: The following arguments are required!"
+#: src/Main.py:121
+msgid "Other LDAPError:"
 msgstr ""
 
-#: src/Main.py:126
-msgid "Please enter other commands:\n"
+#: src/Main.py:182
+msgid "Authentication failed. Cannot leave the domain"
+msgstr ""
+
+#: src/Main.py:192
+msgid "Successfully left the domain. Please restart your computer."
+msgstr ""
+
+#: src/Main.py:198 src/Main.py:203
+msgid "joined={}"
+msgstr ""
+
+#: src/Main.py:209
+msgid "CLI application for Pardus Domain Joiner. You must run it with sudo."
+msgstr ""
+
+#: src/Main.py:216
+msgid "show this help message and exit"
+msgstr ""
+
+#: src/Main.py:221
+msgid "Show version"
+msgstr ""
+
+#: src/Main.py:224
+msgid "Join a machine to the domain"
+msgstr ""
+
+#: src/Main.py:226 src/Main.py:243
+msgid "Domain name"
+msgstr ""
+
+#: src/Main.py:227 src/Main.py:235
+msgid "Username"
+msgstr ""
+
+#: src/Main.py:228 src/Main.py:236
+msgid "User password"
+msgstr ""
+
+#: src/Main.py:229
+msgid "Organizational unit"
+msgstr ""
+
+#: src/Main.py:234
+msgid "Leave the domain"
+msgstr ""
+
+#: src/Main.py:239
+msgid "Check domain status"
+msgstr ""
+
+#: src/Main.py:242
+msgid "Show discovered domain name"
+msgstr ""
+
+#: src/Main.py:249
+msgid "Password for {}: "
+msgstr ""
+
+#: src/Main.py:265
+msgid "This machine has not joined the domain before."
+msgstr ""
+
+#: src/Main.py:273
+msgid "Domain discovered:\n"
+msgstr ""
+
+#: src/Main.py:275
+msgid "Server not found: {}"
+msgstr ""
+
+#: src/Main.py:284 src/Main.py:286
+msgid "Version: {}"
+msgstr ""
+
+#: pardus-domain-cli:10
+msgid "You must be root!"
 msgstr ""

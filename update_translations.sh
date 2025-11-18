@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 langs=("tr")
 
@@ -11,7 +12,17 @@ fi
 
 
 echo "updating pot file"
-xgettext -o po/pardus-domain-cli.pot --files-from=po/files
+> po/pardus-domain-cli.pot
+# xgettext -o po/pardus-domain-cli.pot --files-from=po/files
+
+for file in $(cat po/files); do
+    head_line=$(head -n 1 "$file")
+    if [[ "$head_line" =~ python ]]; then
+        xgettext --language=Python -k_ --join-existing -o po/pardus-domain-cli.pot "$file"
+    else
+        xgettext --language=Shell -k_ -kgettext -keval_gettext --join-existing -o po/pardus-domain-cli.pot "$file"
+    fi
+done
 
 for lang in ${langs[@]}; do
 	if [[ -f po/$lang.po ]]; then
