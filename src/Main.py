@@ -204,6 +204,10 @@ def status():
         exit(0)
 
 
+def change_hostname(hostname):
+    domain_operations.config_manager.set_hostname(hostname)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=_("CLI application for Pardus Domain Joiner. You must run it with sudo."),
@@ -218,6 +222,7 @@ def main():
 
     subparser = parser.add_subparsers(dest="command", required=True)
 
+    # version
     subparser.add_parser("version", help=_("Show version"))
 
     # join
@@ -241,6 +246,10 @@ def main():
     # info
     info_parser = subparser.add_parser("info", help=_("Show discovered domain name"))
     info_parser.add_argument("domain", help=_("Domain name"))
+
+    # change
+    change_parser = subparser.add_parser("change", help=_("Change the hostname"))
+    change_parser.add_argument("hostname", help=_("Hostname"))
 
     args = parser.parse_args()
     model = read_config()
@@ -284,6 +293,8 @@ def main():
             print(_("Version: {}").format(version))
         else:
             print(_("Version: {}").format(default_version))
+    elif args.command == "change":
+        change_hostname(hostname=args.hostname)
 
 
 if __name__ == "__main__":
