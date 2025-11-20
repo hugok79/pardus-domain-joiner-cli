@@ -12,11 +12,11 @@ def create_mo_files():
     for po in os.listdir(podir):
         if po.endswith(".po"):
             os.makedirs("{}/{}/LC_MESSAGES".format(podir, po.split(".po")[0]), exist_ok=True)
-            mo_file = "{}/{}/LC_MESSAGES/{}".format(podir, po.split(".po")[0], "pardus-domain-cli.mo")
+            mo_file = "{}/{}/LC_MESSAGES/{}".format(podir, po.split(".po")[0], "pardus-domain-joiner-cli.mo")
             msgfmt_cmd = 'msgfmt {} -o {}'.format(podir + "/" + po, mo_file)
             subprocess.call(msgfmt_cmd, shell=True)
             mo.append(("/usr/share/locale/" + po.split(".po")[0] + "/LC_MESSAGES",
-                       ["po/" + po.split(".po")[0] + "/LC_MESSAGES/pardus-domain-cli.mo"]))
+                       ["po/" + po.split(".po")[0] + "/LC_MESSAGES/pardus-domain-joiner-cli.mo"]))
     return mo
 
 changelog = "debian/changelog"
@@ -34,21 +34,21 @@ if os.path.exists(changelog):
 
 data_files = [
     (
-        "/usr/share/pardus/pardus-domain-cli/src/",
+        "/usr/share/pardus/pardus-domain-joiner-cli/src/",
         ["src/Main.py", "src/__version__"],
     ),
     (
-        "/usr/share/pardus/pardus-domain-cli/src/managers",
+        "/usr/share/pardus/pardus-domain-joiner-cli/src/managers",
         ["src/managers/ConfigManager.py"],
     ),
-    ("/usr/bin/", ["pardus-domain-cli"]),
+    ("/usr/bin/", ["pardus-domain-joiner-cli"]),
 ] + create_mo_files()
 
 setup(
-    name="pardus-domain-cli",
+    name="pardus-domain-joiner-cli",
     version=version,
     packages=find_packages(),
-    scripts=["pardus-domain-cli"],
+    scripts=["pardus-domain-joiner-cli"],
     install_requires=["PyGObject"],
     data_files=data_files,
     author="Büşra ÇAĞLIYAN",

@@ -23,8 +23,8 @@ if not os.path.exists(localedir):
 SYSTEM_LANGUAGE = os.environ.get("LANG")
 locale.setlocale(locale.LC_ALL, os.environ.get("LANG"))
 
-locale.bindtextdomain('pardus-domain-cli', localedir)
-locale.textdomain('pardus-domain-cli')
+locale.bindtextdomain('pardus-domain-joiner-cli', localedir)
+locale.textdomain('pardus-domain-joiner-cli')
 
 error_patterns = {
     "ou_errors": {

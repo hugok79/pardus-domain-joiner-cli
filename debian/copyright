@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pardus-domain-cli
+Upstream-Name: pardus-domain-joiner-cli
 Upstream-Contact: Büşra ÇAĞLIYAN <busra.cagliyan@pardus.org.tr>
 Source: https://github.com/pardus/
 

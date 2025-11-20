@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-18 14:21+0300\n"
+"POT-Creation-Date: 2025-11-20 16:18+0300\n"
 "PO-Revision-Date: 2025-11-18 10:59+0300\n"
 "Last-Translator: busra.cagliyan <busra.cagliyan@pardus.org.tr>\n"
 "Language-Team: Turkish <dev@pardus.org.tr>\n"
@@ -79,69 +79,78 @@ msgstr ""
 msgid "joined={}"
 msgstr "katıldı={}"
 
-#: src/Main.py:209
+#: src/Main.py:213
 msgid "CLI application for Pardus Domain Joiner. You must run it with sudo."
 msgstr ""
 "Pardus domain joiner için CLI uygulaması. Bunu sudo ile çalıştırmanız "
 "gerekiyor."
 
-#: src/Main.py:216
+#: src/Main.py:220
 msgid "show this help message and exit"
 msgstr "yardım mesajını göster ve çık"
 
-#: src/Main.py:221
+#: src/Main.py:226
 msgid "Show version"
 msgstr "Sürümü göster"
 
-#: src/Main.py:224
+#: src/Main.py:229
 msgid "Join a machine to the domain"
 msgstr "Etki alanına dahil edin"
 
-#: src/Main.py:226 src/Main.py:243
+#: src/Main.py:231 src/Main.py:248
 msgid "Domain name"
 msgstr "Etki alanı adı"
 
-#: src/Main.py:227 src/Main.py:235
+#: src/Main.py:232 src/Main.py:240
 msgid "Username"
 msgstr "Etki alanı kullanıcı adı"
 
-#: src/Main.py:228 src/Main.py:236
+#: src/Main.py:233 src/Main.py:241
 msgid "User password"
 msgstr "Etki alanı kullanıcısının parolası"
 
-#: src/Main.py:229
+#: src/Main.py:234
 msgid "Organizational unit"
 msgstr "Organizasyonel birim"
 
-#: src/Main.py:234
+#: src/Main.py:239
 msgid "Leave the domain"
 msgstr "Etki alanından ayrılın"
 
-#: src/Main.py:239
+#: src/Main.py:244
 msgid "Check domain status"
 msgstr "Etki alanı durumunu kontrol edin"
 
-#: src/Main.py:242
+#: src/Main.py:247
 msgid "Show discovered domain name"
 msgstr "Etki alanı adını keşfedin"
 
-#: src/Main.py:249
+#: src/Main.py:251
+msgid "Change the hostname"
+msgstr ""
+
+#: src/Main.py:252
+#, fuzzy
+msgid "Hostname"
+msgstr "Etki alanı kullanıcı adı"
+
+#: src/Main.py:258
 msgid "Password for {}: "
 msgstr "{} için parola: "
 
-#: src/Main.py:265
+#: src/Main.py:274
 msgid "This machine has not joined the domain before."
 msgstr "Bu makine daha önce etki alanına katılmadı."
 
-#: src/Main.py:273
+#: src/Main.py:282
 msgid "Domain discovered:\n"
 msgstr "Alan adı keşfedildi:\n"
 
-#: src/Main.py:275
+#: src/Main.py:284
 msgid "Server not found: {}"
 msgstr "Sunucu bulunamadı: {}"
 
-#: src/Main.py:284 src/Main.py:286
+#: src/Main.py:293 src/Main.py:295
 msgid "Version: {}"
 msgstr "Sürüm: {}"
 
