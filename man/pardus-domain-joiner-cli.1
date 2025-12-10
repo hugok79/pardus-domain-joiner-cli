@@ -1,0 +1,161 @@
+.TH PARDUS-DOMAIN-JOINER-CLI 1 "2025-01-01" "Pardus Domain Joiner" "User Commands"
+
+.SH NAME
+pardus-domain-joiner-cli \- Command-line tool for joining, leaving and managing domain settings on Pardus
+
+.SH SYNOPSIS
+.B pardus-domain-joiner-cli
+<command> [options]
+
+.SH DESCRIPTION
+Pardus Domain Joiner CLI is a command-line tool used to join a system to a domain, leave a domain,
+check domain connection status, display domain discovery information, or change the system hostname.
+Most commands require root privileges.
+
+.SH COMMANDS
+
+.SH JOIN
+.B pardus-domain-joiner-cli join
+service domain user [options]
+
+Joins the system to a domain using either the \fBsssd\fR or \fBwinbind\fR service.
+
+.TP
+.B service
+Service to use: \fBsssd\fR or \fBwinbind\fR (required).
+
+.TP
+.B domain
+Domain name (required).
+
+.TP
+.B user
+Username (required).
+
+.TP
+.B -p, --password
+Password. If not provided, it will be securely prompted.
+
+.TP
+.B --ou
+Organizational Unit (optional).
+
+.TP
+.B --workgroup
+Workgroup name (optional, only for winbind).
+
+.TP
+.B --hostname
+Computer name. If omitted, the current hostname is used.
+
+.PP
+Example:
+.PP
+.EX
+sudo pardus-domain-joiner-cli join sssd example.com admin
+.EE
+
+The program will prompt for a password.
+
+---
+
+.SH LEAVE
+.B pardus-domain-joiner-cli leave
+user [options]
+
+Removes the system from the currently joined domain.
+
+.TP
+.B user
+Username (required).
+
+.TP
+.B -p, --password
+Password. If not supplied, it will be asked interactively.
+
+.PP
+Example:
+.PP
+.EX
+sudo pardus-domain-joiner-cli leave admin
+.EE
+
+---
+
+.SH STATUS
+.B pardus-domain-joiner-cli status
+
+Displays the current domain connection status.
+
+.PP
+Example:
+.EX
+sudo pardus-domain-joiner-cli status
+.EE
+
+---
+
+.SH INFO
+.B pardus-domain-joiner-cli info
+domain
+
+Shows domain discovery and related information for the specified domain.
+
+.TP
+.B domain
+Domain name (required).
+
+.PP
+Example:
+.EX
+sudo pardus-domain-joiner-cli info example.com
+.EE
+
+---
+
+.SH CHANGE
+.B pardus-domain-joiner-cli change
+hostname
+
+Changes the system hostname.
+
+.TP
+.B hostname
+New hostname (required).
+
+.PP
+Example:
+.EX
+sudo pardus-domain-joiner-cli change newhostname
+.EE
+
+---
+
+.SH VERSION
+.B pardus-domain-joiner-cli version
+
+Displays the CLI version.
+
+.PP
+Example:
+.EX
+pardus-domain-joiner-cli version
+.EE
+
+---
+
+.SH NOTES
+.IP \[bu]
+If no password is provided, the program securely prompts for one.
+.IP \[bu]
+Most commands require root privileges.
+.IP \[bu]
+The \fBworkgroup\fR parameter is only used with the winbind service.
+
+---
+
+.SH AUTHOR
+Pardus Development Team
+
+.SH SEE ALSO
+sssd(8), winbind(8)

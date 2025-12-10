@@ -41,6 +41,8 @@ data_files = [
         "/usr/share/pardus/pardus-domain-joiner-cli/src/managers",
         ["src/managers/ConfigManager.py"],
     ),
+    ("/usr/share/man/man1/", ["man/pardus-domain-joiner-cli.1"]),
+    ("/usr/share/man/tr/man1/", ["man/tr/pardus-domain-joiner-cli.1"]),
     ("/usr/bin/", ["pardus-domain-joiner-cli"]),
 ] + create_mo_files()
 

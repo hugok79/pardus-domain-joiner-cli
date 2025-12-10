@@ -1,0 +1,161 @@
+.TH PARDUS-DOMAIN-JOINER-CLI 1 "2025-01-01" "Pardus Domain Joiner" "User Commands"
+
+.SH NAME
+pardus-domain-joiner-cli \- Pardus için etki alanına katılma, ayrılma ve yönetim aracı
+
+.SH SYNOPSIS
+.B pardus-domain-joiner-cli
+<command> [options]
+
+.SH DESCRIPTION
+Pardus Domain Joiner CLI, bir sistemi etki alanına katmak, ayrılmak, etki alanı durumunu kontrol etmek,
+keşif bilgisi görüntülemek veya sistemin bilgisayar adını değiştirmek için kullanılan bir komut satırı aracıdır.
+Tüm komutlar root yetkisi gerektirir.
+
+.SH COMMANDS
+
+.SH JOIN
+.B pardus-domain-joiner-cli join
+service domain user [options]
+
+Etki alanına katılmak için kullanılır. Servis olarak `sssd` veya `winbind` kullanılabilir.
+
+.TP
+.B service
+Kullanılacak servis: \fBsssd\fR veya \fBwinbind\fR (zorunlu).
+
+.TP
+.B domain
+Etki alanı adı (zorunlu).
+
+.TP
+.B user
+Kullanıcı adı (zorunlu).
+
+.TP
+.B -p, --password
+Parola. Verilmezse güvenli şekilde istenir.
+
+.TP
+.B --ou
+Organizational Unit (isteğe bağlı).
+
+.TP
+.B --workgroup
+Workgroup adı (sadece winbind için).
+
+.TP
+.B --hostname
+Bilgisayar adı. Verilmezse mevcut hostname kullanılır.
+
+.PP
+Örnek kullanım:
+.PP
+.EX
+sudo pardus-domain-joiner-cli join sssd example.com admin
+.EE
+
+Program parola isteyecektir.
+
+---
+
+.SH LEAVE
+.B pardus-domain-joiner-cli leave
+user [options]
+
+Sistemi bağlı olduğu etki alanından çıkarır.
+
+.TP
+.B user
+Kullanıcı adı (zorunlu).
+
+.TP
+.B -p, --password
+Parola. Verilmezse istenir.
+
+.PP
+Örnek kullanım:
+.PP
+.EX
+sudo pardus-domain-joiner-cli leave admin
+.EE
+
+---
+
+.SH STATUS
+.B pardus-domain-joiner-cli status
+
+Etki alanı bağlantı durumunu görüntüler.
+
+.PP
+Örnek:
+.EX
+sudo pardus-domain-joiner-cli status
+.EE
+
+---
+
+.SH INFO
+.B pardus-domain-joiner-cli info
+domain
+
+Belirtilen etki alanı için keşif/dizin bilgilerini gösterir.
+
+.TP
+.B domain
+Etki alanı adı (zorunlu).
+
+.PP
+Örnek:
+.EX
+sudo pardus-domain-joiner-cli info example.com
+.EE
+
+---
+
+.SH CHANGE
+.B pardus-domain-joiner-cli change
+hostname
+
+Bilgisayar adını değiştirir.
+
+.TP
+.B hostname
+Yeni hostname (zorunlu).
+
+.PP
+Örnek:
+.EX
+sudo pardus-domain-joiner-cli change newhostname
+.EE
+
+---
+
+.SH VERSION
+.B pardus-domain-joiner-cli version
+
+Program sürümünü gösterir.
+
+.PP
+Örnek:
+.EX
+pardus-domain-joiner-cli version
+.EE
+
+---
+
+.SH NOTES
+.IP \[bu]
+Parola komut satırında verilmezse program güvenli şekilde ister.
+.IP \[bu]
+Komutların çoğu root yetkisi gerektirir.
+.IP \[bu]
+\fBworkgroup\fR parametresi sadece winbind servisi ile kullanılır.
+
+---
+
+.SH AUTHOR
+Pardus Geliştirici Ekibi
+
+.SH SEE ALSO
+sssd(8), winbind(8)
