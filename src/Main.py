@@ -5,6 +5,7 @@ import argparse
 import getpass
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 import sys
 
 import ldap
@@ -26,6 +27,9 @@ locale.setlocale(locale.LC_ALL, os.environ.get("LANG"))
 locale.bindtextdomain('pardus-domain-joiner-cli', localedir)
 locale.textdomain('pardus-domain-joiner-cli')
 
+logger = logging.getLogger(__name__)
+
+
 error_patterns = {
     "ou_errors": {
         "The organizational unit does not exist": _("Invalid organizational unit!"),
@@ -43,6 +47,38 @@ error_patterns = {
         _("Warning: Workgroup is empty. You can set it using the --workgroup parameter.")
     }
 }
+
+
+def setup_logging(verbose=False):
+    log_file = "/var/log/pardus-domain-joiner.log"
+
+    try:
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        open(log_file, "a").close()
+    except PermissionError:
+        log_file = os.path.expanduser("~/.local/share/pdj/pardus-domain-joiner.log")
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
+
+    file_handler = RotatingFileHandler(
+        log_file,
+        maxBytes=5*1024*1024,
+        backupCount=5
+    )
+    file_handler.setFormatter(formatter)
+
+    console_handler = logging.StreamHandler(sys.stderr)
+    console_handler.setFormatter(formatter)
+
+    if not root_logger.handlers:
+        root_logger.addHandler(file_handler)
+        root_logger.addHandler(console_handler)
 
 
 class Model:
@@ -84,22 +120,27 @@ def authenticate_user_in_ad(domain, username, password):
 
     try:
         if not username or not password:
-            print(_("no username or password"))
+            #print(_("no username or password"))
+            logger.error(_("no username or password"))
             return None
 
         ldap_conn.authenticate()
 
     except ldap.INVALID_CREDENTIALS:
-        print(_("Invalid credentials."))
+        #print(_("Invalid credentials."))
+        logger.warning(_("Invalid credentials."))
         return None
     except ldap.SERVER_DOWN:
-        print(_("Server is not reachable."))
+        #print(_("Server is not reachable."))
+        logger.exception(_("Server is not reachable."))
         return None
     except ldap.LDAPError as err:
-        print(_("LDAP Error:"), err)
+        #print(_("LDAP Error:"), err)
+        logger.exception(_("LDAP Error: %s"), err)
         return None
     except Exception as e:
-        print(_("LDAP Authenticate Exception:"), e)
+        #print(_("LDAP Authenticate Exception:"), e)
+        logger.exception(_("LDAP Authenticate Exception: %s"), e)
         return None
     else:
         return ldap_conn
@@ -111,17 +152,22 @@ def check_hostname_in_ad(domain, hostname, username, password):
         return False
 
     try:
-        print(_("Checking if hostname {} exists in AD...").format(hostname))
+        #print(_("Checking if hostname {} exists in AD...").format(hostname))
+        logger.info(_("Checking if hostname %s exists in AD..."), hostname)
         exists = ldap_conn.check_computer_exists_in_ad(hostname)
-        print("Hostname exists in AD:", exists)
+        #print("Hostname exists in AD:", exists)
+        logger.info("Hostname exists in AD: %s", exists)
 
         if exists:
-            print(_("Your computer still exists in Active Directory."))
+            #print(_("Your computer still exists in Active Directory."))
+            logger.warning(_("Your computer still exists in Active Directory."))
     except ldap.LDAPError as err:
-        print(_("Other LDAPError:"), err)
+        #print(_("Other LDAPError:"), err)
+        logger.exception(_("Other LDAPError: %s"), err)
         sys.exit(1)
     except Exception as e:
-        print(_("LDAP Authenticate Exception:"), e)
+        #print(_("LDAP Authenticate Exception:"), e)
+        logger.exception(_("LDAP Authenticate Exception: %s"), e)
         sys.exit(1)
     finally:
         try:
@@ -136,7 +182,8 @@ def join_domain(
     is_winbind = True if connection_type == "winbind" else False
     if is_winbind and workgroup is None:
         workgroup = domain_operations.get_netbios_name(domain)
-        print("Workgroup: ", workgroup)
+        #print("Workgroup: ", workgroup)
+        logger.info("Workgroup: %s", workgroup)
 
     if hostname is None:
         hostname = os.uname()[1]
@@ -156,7 +203,8 @@ def join_domain(
         for category, pattern in error_patterns.items():
             for key, message in pattern.items():
                 if key in result:
-                    print(message)
+                    #print(message)
+                    logger.info(message)
 
     ouaddress = ouaddress or ""
 
@@ -179,7 +227,8 @@ def leave_domain(username, password):
 
     ldap_auth = authenticate_user_in_ad(domain, username, password)
     if ldap_auth is None:
-        print(_("Authentication failed. Cannot leave the domain"))
+        #print(_("Authentication failed. Cannot leave the domain"))
+        logger.error(_("Authentication failed. Cannot leave the domain"))
         sys.exit(1)
 
     domain_operations.leave(
@@ -189,19 +238,22 @@ def leave_domain(username, password):
         realmd=(not is_winbind),
     )
     check_hostname_in_ad(domain, hostname, username, password)
-    print(_("Successfully left the domain. Please restart your computer."))
+    #print(_("Successfully left the domain. Please restart your computer."))
+    logger.info(_("Successfully left the domain. Please restart your computer."))
 
 
 def status():
     joined_domain_name = domain_operations.list(realmd=True)
     if joined_domain_name:
-        print(_("joined={}").format(joined_domain_name))
-        exit(0)
+        #print(_("joined={}").format(joined_domain_name))
+        logger.info(_("joined=%s"), joined_domain_name)
+        sys.exit(0)
 
     joined_domain_name = domain_operations.list(winbind=True)
     if joined_domain_name:
-        print(_("joined={}").format(joined_domain_name))
-        exit(0)
+        #print(_("joined={}").format(joined_domain_name))
+        logger.info(_("joined=%s"), joined_domain_name)
+        sys.exit(0)
 
 
 def change_hostname(hostname):
@@ -254,6 +306,9 @@ def main():
     args = parser.parse_args()
     model = read_config()
 
+    setup_logging(verbose=True)
+    logger = logging.getLogger(__name__)
+
     if hasattr(args, "password") and not args.password:
         args.password = getpass.getpass(_("Password for {}: ").format(args.user))
 
@@ -271,17 +326,20 @@ def main():
     elif args.command == "leave":
         joined_domain_name = domain_operations.list(realmd=True) or domain_operations.list(winbind=True)
         if not joined_domain_name:
-            print(_("This machine has not joined the domain before."))
-            exit(1)
+            #print(_("This machine has not joined the domain before."))
+            logger.warning(_("This machine has not joined the domain before."))
+            sys.exit(1)
         leave_domain(username=args.user, password=args.password)
     elif args.command == "status":
         status()
     elif args.command == "info":
         discover_domain = domain_operations.discover_domain(args.domain)
         if discover_domain:
-            print(_("Domain discovered:\n"), discover_domain)
+            #print(_("Domain discovered:\n"), discover_domain)
+            logger.info(_("Domain discovered: %s"), discover_domain)
         else:
-            print(_("Server not found: {}").format(args.domain))
+            #print(_("Server not found: {}").format(args.domain))
+            logger.error(_("Server not found: %s"), args.domain)
     elif args.command == "version":
         current_dir = os.path.dirname(os.path.abspath(__file__))
         file_path = os.path.join(current_dir, "__version__")
@@ -290,9 +348,11 @@ def main():
         if os.path.exists(file_path):
             with open(file_path, "r") as f:
                 version = f.readline().strip()
-            print(_("Version: {}").format(version))
+            #print(_("Version: {}").format(version))
+            logger.info(_("Version: %s"), version)
         else:
-            print(_("Version: {}").format(default_version))
+            #print(_("Version: {}").format(default_version))
+            logger.info(_("Version: %s"), default_version)
     elif args.command == "change":
         change_hostname(hostname=args.hostname)
 
