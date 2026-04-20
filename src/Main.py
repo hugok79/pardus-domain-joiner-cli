@@ -4,14 +4,13 @@
 import argparse
 import getpass
 import os
-import logging
-from logging.handlers import RotatingFileHandler
 import sys
 
 import ldap
 import managers.ConfigManager as ConfigManager
 from pardus_domain_joiner import domain_operations
 from pardus_domain_joiner import domain_joiner_ldap
+from pardus_domain_joiner import logger
 
 import locale
 from locale import gettext as _
@@ -27,7 +26,7 @@ locale.setlocale(locale.LC_ALL, os.environ.get("LANG"))
 locale.bindtextdomain('pardus-domain-joiner-cli', localedir)
 locale.textdomain('pardus-domain-joiner-cli')
 
-logger = logging.getLogger(__name__)
+logger = logger.get_logger("pardus_domain_joiner_cli")
 
 
 error_patterns = {
@@ -47,38 +46,6 @@ error_patterns = {
         _("Warning: Workgroup is empty. You can set it using the --workgroup parameter.")
     }
 }
-
-
-def setup_logging(verbose=False):
-    log_file = "/var/log/pardus-domain-joiner.log"
-
-    try:
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
-        open(log_file, "a").close()
-    except PermissionError:
-        log_file = os.path.expanduser("~/.local/share/pdj/pardus-domain-joiner.log")
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
-
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG if verbose else logging.INFO)
-
-    formatter = logging.Formatter(
-        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    )
-
-    file_handler = RotatingFileHandler(
-        log_file,
-        maxBytes=5*1024*1024,
-        backupCount=5
-    )
-    file_handler.setFormatter(formatter)
-
-    console_handler = logging.StreamHandler(sys.stderr)
-    console_handler.setFormatter(formatter)
-
-    if not root_logger.handlers:
-        root_logger.addHandler(file_handler)
-        root_logger.addHandler(console_handler)
 
 
 class Model:
@@ -156,7 +123,7 @@ def check_hostname_in_ad(domain, hostname, username, password):
         logger.info(_("Checking if hostname %s exists in AD..."), hostname)
         exists = ldap_conn.check_computer_exists_in_ad(hostname)
         #print("Hostname exists in AD:", exists)
-        logger.info("Hostname exists in AD: %s", exists)
+        logger.info(_("Hostname exists in AD: %s"), exists)
 
         if exists:
             #print(_("Your computer still exists in Active Directory."))
@@ -204,7 +171,7 @@ def join_domain(
             for key, message in pattern.items():
                 if key in result:
                     #print(message)
-                    logger.info(message)
+                    logger.error(message)
 
     ouaddress = ouaddress or ""
 
@@ -305,9 +272,6 @@ def main():
 
     args = parser.parse_args()
     model = read_config()
-
-    setup_logging(verbose=True)
-    logger = logging.getLogger(__name__)
 
     if hasattr(args, "password") and not args.password:
         args.password = getpass.getpass(_("Password for {}: ").format(args.user))
